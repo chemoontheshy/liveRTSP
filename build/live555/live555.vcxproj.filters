@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\src\live555\live555MediaServer.cpp" />
+    <ClCompile Include="..\..\src\live555\h264LiveFramedSource.cpp" />
+    <ClCompile Include="..\..\src\live555\splitnalu.cpp" />
+    <ClCompile Include="..\..\src\live555\h264LiveVideoServerMediaSubssion.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\live555\h264LiveFramedSource.hh" />
+    <ClInclude Include="..\..\src\live555\splitnalu.h" />
+    <ClInclude Include="..\..\src\live555\h264LiveVideoServerMediaSubssion.hh" />
+  </ItemGroup>
+</Project>
