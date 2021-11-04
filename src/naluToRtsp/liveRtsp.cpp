@@ -1,60 +1,86 @@
 #include "liveRtsp.h"
-#include "liveMedia.hh"  
-
+#include <liveMedia.hh>
+#include "h264FramedSource.h"
+#include <BasicUsageEnvironment.hh>
+#include <GroupsockHelper.hh>
+#include <thread>
 
 namespace vsnc
 {
 	namespace live
 	{
-		/// <summary>
-		/// True：后启动的客户端总是从当前第一个客户端已经播放到的位置开始播放
-		/// False：每个客户端都从头开始播放影视频文件
-		/// </summary>
-		static Boolean REUSEFRIRSTSOURCE = True;
-		/// <summary>
-		/// 标准输出:打印相关信息
-		/// </summary>
-		/// <param name="rtspServer">RTSPServer权柄</param>
-		/// <param name="sms">ServerMediaSession权柄</param>
-		/// <param name="streamName">流媒体名</param>
-		static void __annouce_stream(RTSPServer* rtspServer, ServerMediaSession* sms, const std::string& streamName);
+		/// <summary>RTP端口</summary>
+		static size_t RTP_PORT = 18888;
+		/// <summary>RTCP端口</summary>
+		static size_t RTCP_PORT = RTP_PORT + 1;
+		/// <summary>TTL</summary>
+		static uint8_t TTL = 255;
+		/// <summary>in kbps;for RTCP b/w share</summary>
+		static size_t ESTIMATED_SESSION_BANDWIDTH = 500;
+		H264FramedSource* videoFrame;
 	}
-}
-
-void vsnc::live::__annouce_stream(RTSPServer* rtspServer, ServerMediaSession* sms, const std::string& streamName)
-{
-	char* url = rtspServer->rtspURL(sms);
-	UsageEnvironment& _env = rtspServer->envir();
-	_env << "\n\"" << streamName.c_str() << "\" stream\"\n";
-	_env << "Play this stream using the URL \"" << url;
-	delete[] url;
 }
 
 void vsnc::live::LiveServer::start(const CODEC& codec, const Parameters& param)
 {
-	// 创建任务调度器并初始化环境
+	// 创建调度器
 	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-	env = BasicUsageEnvironment::createNew(*scheduler);
-	// 验证信息
-	UserAuthenticationDatabase* authDB = nullptr;
+	auto env = BasicUsageEnvironment::createNew(*scheduler);
 
-	// 创建RTSP服务器，开始监听客户端的链接
-	// 默认使用554
-	RTSPServer* rtspServer = RTSPServer::createNew(*env, param.Port, authDB);
+	// 创建RTP和RTCP
+	struct sockaddr_storage destinationAddress;
+	destinationAddress.ss_family = AF_INET;
+	((struct sockaddr_in&)destinationAddress).sin_addr.S_un.S_addr = chooseRandomIPv4SSMAddress(*env);
+	
+	// 指定RTP和RTCP端口号
+	const Port rtpPort(RTP_PORT);
+	const Port rtcpPort(RTCP_PORT);
+
+	// 网络设置,指定多播？
+	Groupsock rtpGroupsock(*env, destinationAddress, rtpPort, TTL);
+	rtpGroupsock.multicastSendOnly();
+	Groupsock rtcpGroupsock(*env, destinationAddress, rtcpPort, TTL);
+	rtcpGroupsock.multicastSendOnly();
+
+	// 输出包最大的范围
+	OutPacketBuffer::maxSize = 100000;
+
+	// 初始化RTP打包
+	auto videoSink = H264VideoRTPSink::createNew(*env, &rtpGroupsock, 96);
+
+	const unsigned maxCNAMElen = 100;
+	unsigned char CNAME[maxCNAMElen + 1];
+	gethostname((char*)CNAME, maxCNAMElen);
+	CNAME[maxCNAMElen] = '\0';
+	RTCPInstance* rtcp = RTCPInstance::createNew(*env, &rtcpGroupsock,
+		ESTIMATED_SESSION_BANDWIDTH, CNAME,
+		videoSink, nullptr, TRUE);
+
+	RTSPServer* rtspServer = RTSPServer::createNew(*env, param.Port);
 	if (rtspServer == nullptr)
 	{
 		std::cout << "Failed to create RTSP server: " << env->getResultMsg() << std::endl;
 	}
-	ServerMediaSession* sms = ServerMediaSession::createNew(*env, param.StreamName.c_str(), param.StreamName.c_str(), param.Description.c_str());
 
-	// 用于测试
-	sms->addSubsession(H264VideoFileServerMediaSubsession::createNew(*env, "test.264", REUSEFRIRSTSOURCE));
-
-	// 为rtspServer添加session
+	ServerMediaSession* sms = ServerMediaSession::createNew(*env, param.StreamName.c_str(), nullptr, param.Description.c_str(), True);
+	sms->addSubsession(PassiveServerMediaSubsession::createNew(*videoSink, rtcp));
 	rtspServer->addServerMediaSession(sms);
+	// 打印访问地址
+	auto url = rtspServer->rtspURL(sms);
+	std::cout << "Play this stream using the URL:" << url << std::endl;
 
-	//应答信息到标准输出
-	__annouce_stream(rtspServer, sms, param.StreamName);
-	//进入事件循环，对套接字的读取事件和媒体文件的延时发送操作都在这个循环中完成。
+	// 获取帧，继承与vFrameSource
+	videoFrame = H264FramedSource::createNew(*env, 0, 0);
+
+	// 离散帧（而不是任意的字节流）作为输入，避免了完整的解析和数据复制开销。
+	H264VideoStreamDiscreteFramer* videoSource = H264VideoStreamDiscreteFramer::createNew(*env, videoFrame);
+	
+	videoSink->startPlaying(*videoSource, nullptr, videoSink);
+	
 	env->taskScheduler().doEventLoop();
+}
+
+void vsnc::live::LiveServer::dump(const vsnc::vnal::Nalu& nalu)
+{
+	videoFrame->dump(nalu);
 }

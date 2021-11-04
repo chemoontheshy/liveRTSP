@@ -12,7 +12,7 @@
 using namespace vsnc::vnal;
 
 
-Parser::Parser(std::string filename)
+void vsnc::vnal::Parser::Init(std::string filename)
 {
 	// 以二进制格式打开
 	std::ifstream file(filename, std::ios::in | std::ios::binary);
@@ -48,15 +48,10 @@ Parser::Parser(std::string filename)
 	m_pEndPos = m_pStartPos + m_u32FileSize;
 }
 
-Parser::~Parser() noexcept
-{
-	delete[] m_pBuffer;
-}
-
 int Parser::CheckNaluHead(const ptr& head) noexcept
 {
-	//if (*head == 0x00 && *(head + 1) == 0x00 && *(head + 2) == 0x01) return 3;
-    if (*head == 0x00 && *(head + 1) == 0x00 && *(head + 2) == 0x00 && *(head + 3) == 0x01) return 4;
+	if (*head == 0x00 && *(head + 1) == 0x00 && *(head + 2) == 0x01) return 3;
+	if (*head == 0x00 && *(head + 1) == 0x00 && *(head + 2) == 0x00 && *(head + 3) == 0x01) return 4;
 	return -1;
 }
 
@@ -86,7 +81,7 @@ Nalu Parser::GetNextNalu()
 ptr vsnc::vnal::Parser::FindNextStartCode(ptr head, len size) noexcept
 {
 	for (len i = 0; i < size - 3; i++)
-	{  
+	{
 		if (CheckNaluHead(head) > 0) return head;
 		head++;
 	}

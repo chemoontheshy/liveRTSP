@@ -2,6 +2,7 @@
 #define __LIVE_RTSP_H_
 #include <iostream>
 #include "BasicUsageEnvironment.hh"
+#include "splitnalu.h"
 
 namespace vsnc
 {
@@ -20,12 +21,13 @@ namespace vsnc
 			std::string Password;
 			std::string StreamName;
 			std::string Description;
-		};
+		}Parameters;
 
 		class LiveServer
 		{
 		public:
 			void start(const CODEC& codec, const Parameters& param);
+			void dump(const vsnc::vnal::Nalu& nalu);
 		private:
 			UsageEnvironment* env;
 		};

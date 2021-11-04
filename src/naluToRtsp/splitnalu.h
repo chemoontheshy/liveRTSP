@@ -35,17 +35,10 @@ namespace vsnc
 		class Parser
 		{
 		public:
-			/// <summary>
-			/// 构造函数
-			/// </summary>
-			/// <param name="filename">输入h264/h265文件地址</param>
-			Parser(std::string filename);
 
-			/// <summary>
-			/// 析构函数
-			/// </summary>
-			~Parser() noexcept;
-			
+			void Init(std::string filename);
+		
+
 			/// <summary>
 			/// 检查nalu的头
 			/// </summary>
