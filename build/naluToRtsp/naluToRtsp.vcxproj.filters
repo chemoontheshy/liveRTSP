@@ -4,11 +4,11 @@
     <ClCompile Include="..\..\src\naluToRtsp\main.cpp" />
     <ClCompile Include="..\..\src\naluToRtsp\liveRtsp.cpp" />
     <ClCompile Include="..\..\src\naluToRtsp\splitnalu.cpp" />
-    <ClCompile Include="..\..\src\naluToRtsp\h264FramedSource.cpp" />
+    <ClCompile Include="..\..\src\naluToRtsp\h264or5FramedSource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\naluToRtsp\liveRtsp.h" />
     <ClInclude Include="..\..\src\naluToRtsp\splitnalu.h" />
-    <ClInclude Include="..\..\src\naluToRtsp\h264FramedSource.h" />
+    <ClInclude Include="..\..\src\naluToRtsp\h264or5FramedSource.h" />
   </ItemGroup>
 </Project>

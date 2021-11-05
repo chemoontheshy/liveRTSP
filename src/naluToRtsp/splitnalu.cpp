@@ -37,11 +37,11 @@ void vsnc::vnal::Parser::Init(std::string filename)
 	//判读文件是否全部写道缓冲区
 	if (file)
 	{
-		std::cout << "all characters read successfully.";
+		std::cout << "all characters read successfully." << std::endl;
 	}
 	else
 	{
-		std::cout << "error:only " << file.gcount() << "could be read";
+		std::cout << "error:only " << file.gcount() << "could be read" << std::endl;
 	}
 	file.close();
 	m_pStartPos = m_pCurrentPos = reinterpret_cast<ptr>(m_pBuffer);

@@ -27,7 +27,6 @@ namespace vsnc
 		{
 		public:
 			void start(const CODEC& codec, const Parameters& param);
-			void dump(const vsnc::vnal::Nalu& nalu);
 		private:
 			UsageEnvironment* env;
 		};
