@@ -25,7 +25,7 @@ void vsnc::vnal::Parser::Init(std::string filename)
 	file.seekg(0, file.end);
 
 	// 获取文件的长度
-	m_u32FileSize = file.tellg();
+	m_u32FileSize = static_cast<vsnc::vnal::len>(file.tellg());
 	std::cout << m_u32FileSize << std::endl;
 
 	// 把指针移动到文件最开始
