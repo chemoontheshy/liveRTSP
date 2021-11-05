@@ -11,13 +11,17 @@ namespace vsnc
 	namespace live
 	{
 		/// <summary>RTP端口</summary>
-		static size_t RTP_PORT = 18888;
+		static size_t         RTP_PORT = 18888;
+
 		/// <summary>RTCP端口</summary>
-		static size_t RTCP_PORT = RTP_PORT + 1;
+		static size_t         RTCP_PORT = RTP_PORT + 1;
+
 		/// <summary>TTL</summary>
-		static uint8_t TTL = 255;
+		static uint8_t        TTL = 255;
+
 		/// <summary>in kbps;for RTCP b/w share</summary>
-		static size_t ESTIMATED_SESSION_BANDWIDTH = 500;
+		static size_t         ESTIMATED_SESSION_BANDWIDTH = 500;
+
 		/// <summary>
 		/// 建立rtsp服务器
 		/// </summary>
@@ -29,7 +33,7 @@ namespace vsnc
 		/// <param name="param">输入参数</param>
 		/// <param name="rtcpGroupsock">RTCP的参数</param>
 		template<typename tVideoSink,typename tVdieoSource>
-		static void __build_server(BasicUsageEnvironment* env, tVideoSink* videoSink,tVdieoSource* videoSource,
+		static void          __build_server(BasicUsageEnvironment* env, tVideoSink* videoSink,tVdieoSource* videoSource,
 			                       const Parameters& param, Groupsock& rtcpGroupsock);
 
 		std::thread t1;
