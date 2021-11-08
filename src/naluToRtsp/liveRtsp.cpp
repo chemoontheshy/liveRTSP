@@ -37,7 +37,6 @@ namespace vsnc
 			                       const Parameters& param, Groupsock& rtcpGroupsock);
 
 		std::thread t1;
-		
 	}
 }
 
@@ -72,11 +71,36 @@ void vsnc::live::__build_server(BasicUsageEnvironment* env, tVideoSink* videoSin
 	delete[] url;
 	// 正式调用，开启后就不断获取数据流。
 	videoSink->startPlaying(*videoSource, nullptr, videoSink);
-	// 调用器开始轮询，监听客户端的接入
 	env->taskScheduler().doEventLoop();
-	t1 = std::thread([*env]() {env->taskScheduler().doEventLoop(); });
-	t1.detach();
+	//关闭scheduler
+	env->reclaim();
+	if (sms == nullptr)
+	{
+		sms->deleteAllSubsessions();
+		Medium::close(sms);
+	}
+	if (videoSink != nullptr)
+	{
+		videoSink->stopPaying();
+	}
+	if (rtcp != nullptr)
+	{
+		// rtcp->close();
+		Medium::close(rtcp);
+	}
+	if (rtspServer != nullptr)
+	{
+		// rtspServer->close();
+		Medium::close(rtspServer);
+	}
+	if (videoSource != nullptr)
+	{
+		Medium::close(videoSource);
+	}
+	
+
 }
+
 vsnc::live::LiveServer::~LiveServer()
 {
 }
@@ -84,10 +108,10 @@ void vsnc::live::LiveServer::start(const CODEC& codec, const Parameters& param, 
 {
 	
 
-	// 创建调度器
+	// 创建调度器 //需要delet[]
 	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
 	auto env = BasicUsageEnvironment::createNew(*scheduler);
-
+	
 	// 创建RTP和RTCP
 	struct sockaddr_storage destinationAddress;
 	destinationAddress.ss_family = AF_INET;

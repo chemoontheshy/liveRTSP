@@ -10,9 +10,9 @@ namespace vsnc
 	namespace live
 	{
 		/// <summary>
-/// 适合H264or5的Nalu包输入
-/// 需要去掉StartCode,如果不去掉虽然能播放但是会报错，参考http://lists.live555.com/pipermail/live-devel/2012-July/015474.html
-/// </summary>
+		/// 适合H264or5的Nalu包输入
+		/// 需要去掉StartCode,如果不去掉虽然能播放但是会报错，参考http://lists.live555.com/pipermail/live-devel/2012-July/015474.html
+		/// </summary>
 		class H264or5FramedSource : public FramedSource
 		{
 		public:

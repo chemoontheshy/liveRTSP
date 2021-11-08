@@ -1,49 +1,28 @@
 #include "splitnalu.h"
 #include <Windows.h>
-#include <thread>
 
-using namespace vsnc::vnal;
-
-bool flag =false;
-
-std::thread t1;
-void death(const std::string& data)
+int main()
 {
-	std::cout << data << std::endl;
-	
-}
-class Test
-{
-public:
-	void start();
-
-
-
-};
-
-void Test::start()
-{
-	std::string data = "death";
-	while (!flag)
+	vsnc::vnal::Parser parser("test.hevc");
+	bool flag = true;
+	int a = 0;
+	int frame = 0;
+	while (flag)
 	{
-		Sleep(1000);
-		death(data);
+		auto nalu = parser.GetNextNalu();
+		if (nalu.Length <= 0)
+		{
+			flag = !flag;
+			break;
+		}
+		if (parser.CheckNaluHead(nalu.Head) == 3)
+		{
+			a++;
+			std::cout << "a: " << a << std::endl;
+			Sleep(200);
+		}
+		frame++;
 	}
+	std::cout << "frame: " << frame << std::endl;
 }
 
-void send()
-{
-	std::cout << "send" << std::endl;
-}
-int main(void)
-{
-	Test *test;
-	t1 = std::thread([&test]() {test->start(); });
-	t1.detach();
-	while (!flag)
-	{
-		Sleep(2000);
-		send();
-	}
-	return 0;
-}
