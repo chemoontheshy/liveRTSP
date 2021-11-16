@@ -81,6 +81,11 @@ void vsnc::live::H264or5FramedSource::doGetNextFrame()
 	{
 		FramedSource::afterGetting(this);
 	}
+	else
+	{
+		std::cout << "read close" << std::endl;
+		FramedSource::handleClosure();
+	}
 	
 }
 

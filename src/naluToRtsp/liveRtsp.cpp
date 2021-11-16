@@ -39,6 +39,11 @@ namespace vsnc
 		std::thread t1;
 	}
 }
+void afterPlaying(void* /*clientData*/) {
+	std::cout << "test" << std::endl;
+	exit(0);
+}
+
 
 template<typename tVideoSink, typename tVdieoSource>
 void vsnc::live::__build_server(BasicUsageEnvironment* env, tVideoSink* videoSink, tVdieoSource* videoSource,
@@ -70,35 +75,11 @@ void vsnc::live::__build_server(BasicUsageEnvironment* env, tVideoSink* videoSin
 	std::cout << "Play this stream using the URL:" << url << std::endl;
 	delete[] url;
 	// 正式调用，开启后就不断获取数据流。
-	videoSink->startPlaying(*videoSource, nullptr, videoSink);
+	videoSink->startPlaying(*videoSource, afterPlaying, videoSink);
 	env->taskScheduler().doEventLoop();
 	//关闭scheduler
-	env->reclaim();
-	if (sms == nullptr)
-	{
-		sms->deleteAllSubsessions();
-		Medium::close(sms);
-	}
-	if (videoSink != nullptr)
-	{
-		videoSink->stopPaying();
-	}
-	if (rtcp != nullptr)
-	{
-		// rtcp->close();
-		Medium::close(rtcp);
-	}
-	if (rtspServer != nullptr)
-	{
-		// rtspServer->close();
-		Medium::close(rtspServer);
-	}
-	if (videoSource != nullptr)
-	{
-		Medium::close(videoSource);
-	}
-	
-
+	std::thread runner;
+	runner = std::thread()
 }
 
 vsnc::live::LiveServer::~LiveServer()
@@ -110,7 +91,7 @@ void vsnc::live::LiveServer::start(const CODEC& codec, const Parameters& param, 
 
 	// 创建调度器 //需要delet[]
 	TaskScheduler* scheduler = BasicTaskScheduler::createNew();
-	auto env = BasicUsageEnvironment::createNew(*scheduler);
+	env = BasicUsageEnvironment::createNew(*scheduler);
 	
 	// 创建RTP和RTCP
 	struct sockaddr_storage destinationAddress;

@@ -52,6 +52,9 @@ namespace vsnc
 
 			void Send(const vsnc::vnal::Nalu& nalu);
 
+		private:
+			BasicUsageEnvironment* env;
+
 		};
 
 

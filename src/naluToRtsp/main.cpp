@@ -10,13 +10,4 @@ int main()
 	vsnc::vnal::Parser parser;
 	parser.Init("test.264");
 	liveSever.start(vsnc::live::CODEC::H264,param,parser);
-	std::string data = "test";
-	vsnc::vnal::Nalu nalu;
-
-	while (1)
-	{
-		liveSever.Send(nalu);
-		Sleep(1000);
-	}
-	return 0;
 }
